@@ -1,0 +1,14 @@
+[
+    {
+        "file_path": "assets/image1.jpg",
+        "duration": 5
+    },
+    {
+        "file_path": "assets/video1.mp4",
+        "duration": 10
+    },
+    {
+        "file_path": "assets/image2.jpg",
+        "duration": 15
+    }
+]
