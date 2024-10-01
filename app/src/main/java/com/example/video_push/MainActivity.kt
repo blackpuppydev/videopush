@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var player: ExoPlayer
     var videos = ArrayList<VideoFile>()
     var countFile: Int = 0
-    private var handler:Handler = Handler(Looper.getMainLooper())
+    private var handler: Handler? = Handler(Looper.getMainLooper())
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,8 +34,7 @@ class MainActivity : AppCompatActivity() {
 
         //array video
         videos =
-            VideoManager.loadJSONFromAssets(this)?.let { VideoManager.getGsonFromJsonVideo(it) }!!
-
+            VideoManager.getGsonFromJsonVideo(VideoManager.loadJSONFromAssets(this)!!)
 
         playMedia(videos)
 
@@ -61,11 +60,10 @@ class MainActivity : AppCompatActivity() {
     private fun playMedia(file: ArrayList<VideoFile>) {
 
         val mediaPath = file[countFile].file_path
-//        handler = Handler(Looper.getMainLooper())
 
         if (mediaPath.endsWith(".jpg") || mediaPath.endsWith(".png")) {
 
-            val durationPic = file[countFile].duration * 1000
+            var counterDuration = file[countFile].duration
 
             binding?.apply {
                 videoView.visibility = View.GONE
@@ -79,19 +77,29 @@ class MainActivity : AppCompatActivity() {
             val bitmap = getBitmapFromAssets(mediaPath)
             binding?.imageView?.setImageBitmap(bitmap)
 
-            handler.postDelayed({
-                countFile++
-                if (countFile >= file.size)
-                    countFile = 0
+            handler!!.postDelayed(object : Runnable {
+                override fun run() {
+                    Log.d("IMAGE COUNT", "$counterDuration -> $mediaPath")
 
-                playMedia(file)
+                    counterDuration--
 
-            }, (durationPic).toLong())
+                    if (counterDuration == 0) {
+                        countFile++
 
+                        if (countFile >= file.size) {
+                            countFile = 0
+                        }
+
+                        playMedia(file)
+                    } else {
+                        handler!!.postDelayed(this, 1000)
+                    }
+                }
+            }, 1000)
 
         } else if (mediaPath.endsWith(".mp4")) {
 
-            val durationVideo = file[countFile].duration * 1000
+            var counterDuration = file[countFile].duration
 
             binding?.apply {
                 videoView.visibility = View.VISIBLE
@@ -112,21 +120,27 @@ class MainActivity : AppCompatActivity() {
             player.prepare()
             player.play()
 
+            handler!!.postDelayed(object : Runnable {
+                override fun run() {
+                    Log.d("VIDEO COUNT", "$counterDuration -> $mediaPath")
 
+                    counterDuration--
 
-            handler.postDelayed({
+                    if (counterDuration == 0) {
+                        player.stop()
 
-                player.stop()
+                        countFile++
+                        if (countFile >= file.size) {
+                            countFile = 0
+                        }
 
-                countFile++
-                if (countFile >= file.size) {
-                    countFile = 0
+                        playMedia(file)
+                        player.release()
+                    } else {
+                        handler!!.postDelayed(this, 1000)
+                    }
                 }
-
-                playMedia(file)
-                player.release()
-
-            }, durationVideo.toLong())
+            }, 1000)
 
         }
 
@@ -154,14 +168,16 @@ class MainActivity : AppCompatActivity() {
             countFile = 0
         }
 
+        handler?.removeCallbacksAndMessages(null)
         playMedia(videos)
         player.release()
+
 
     }
 
     override fun onStop() {
         super.onStop()
-        handler.removeCallbacksAndMessages(null)
+        handler?.removeCallbacksAndMessages(null)
     }
 
     private fun getBitmapFromAssets(fileName: String): Bitmap? {
