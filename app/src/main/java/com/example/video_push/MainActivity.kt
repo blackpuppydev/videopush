@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
 
         if (mediaPath.endsWith(".jpg") || mediaPath.endsWith(".png")) {
 
-            var counterDuration = file[countFile].duration
+            val durationPic = file[countFile].duration * 1000
 
             binding?.apply {
                 videoView.visibility = View.GONE
@@ -77,29 +77,19 @@ class MainActivity : AppCompatActivity() {
             val bitmap = getBitmapFromAssets(mediaPath)
             binding?.imageView?.setImageBitmap(bitmap)
 
-            handler!!.postDelayed(object : Runnable {
-                override fun run() {
-                    Log.d("IMAGE COUNT", "$counterDuration -> $mediaPath")
+            handler!!.postDelayed({
+                countFile++
 
-                    counterDuration--
-
-                    if (counterDuration == 0) {
-                        countFile++
-
-                        if (countFile >= file.size) {
-                            countFile = 0
-                        }
-
-                        playMedia(file)
-                    } else {
-                        handler!!.postDelayed(this, 1000)
-                    }
+                if (countFile >= file.size) {
+                    countFile = 0
                 }
-            }, 1000)
+
+                playMedia(file)
+            }, durationPic.toLong())
 
         } else if (mediaPath.endsWith(".mp4")) {
 
-            var counterDuration = file[countFile].duration
+            val durationVideo = file[countFile].duration * 1000
 
             binding?.apply {
                 videoView.visibility = View.VISIBLE
@@ -120,27 +110,18 @@ class MainActivity : AppCompatActivity() {
             player.prepare()
             player.play()
 
-            handler!!.postDelayed(object : Runnable {
-                override fun run() {
-                    Log.d("VIDEO COUNT", "$counterDuration -> $mediaPath")
 
-                    counterDuration--
+            handler!!.postDelayed({
+                player.stop()
 
-                    if (counterDuration == 0) {
-                        player.stop()
-
-                        countFile++
-                        if (countFile >= file.size) {
-                            countFile = 0
-                        }
-
-                        playMedia(file)
-                        player.release()
-                    } else {
-                        handler!!.postDelayed(this, 1000)
-                    }
+                countFile++
+                if (countFile >= file.size) {
+                    countFile = 0
                 }
-            }, 1000)
+
+                playMedia(file)
+                player.release()
+            }, durationVideo.toLong())
 
         }
 
