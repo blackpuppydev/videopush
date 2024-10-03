@@ -7,7 +7,7 @@ import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
 import java.io.IOException
 
-class VideoManager {
+class FileManager {
 
     companion object {
 

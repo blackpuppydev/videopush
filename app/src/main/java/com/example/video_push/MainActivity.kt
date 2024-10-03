@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.View
 import com.example.video_push.databinding.ActivityMainBinding
 import com.example.video_push.model.VideoFile
@@ -31,7 +30,7 @@ class MainActivity : AppCompatActivity() {
 
         //array video
         videos =
-            VideoManager.getGsonFromJsonVideo(VideoManager.loadJSONFromAssets(this)!!)
+            FileManager.getGsonFromJsonVideo(FileManager.loadJSONFromAssets(this)!!)
 
         playMedia(videos)
 
@@ -58,7 +57,7 @@ class MainActivity : AppCompatActivity() {
 
         val mediaPath = file[countFile].file_path
 
-        if (VideoManager.isFileInAssets(this, mediaPath)) {
+        if (FileManager.isFileInAssets(this, mediaPath)) {
             if (mediaPath.endsWith(".jpg") || mediaPath.endsWith(".png")) {
 
                 val durationPic = file[countFile].duration * 1000
