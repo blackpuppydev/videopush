@@ -1,12 +1,10 @@
 package com.example.video_push
 
-import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -15,7 +13,6 @@ import com.example.video_push.databinding.ActivityMainBinding
 import com.example.video_push.model.VideoFile
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.Player
 import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
@@ -61,69 +58,83 @@ class MainActivity : AppCompatActivity() {
 
         val mediaPath = file[countFile].file_path
 
-        if (mediaPath.endsWith(".jpg") || mediaPath.endsWith(".png")) {
+        if (VideoManager.isFileInAssets(this, mediaPath)) {
+            if (mediaPath.endsWith(".jpg") || mediaPath.endsWith(".png")) {
 
-            val durationPic = file[countFile].duration * 1000
+                val durationPic = file[countFile].duration * 1000
 
-            binding?.apply {
-                videoView.visibility = View.GONE
-                imageView.visibility = View.VISIBLE
-                btnStart.visibility = View.GONE
-                btnPause.visibility = View.GONE
-                btnResume.visibility = View.GONE
-                btnStop.visibility = View.GONE
-            }
-
-            val bitmap = getBitmapFromAssets(mediaPath)
-            binding?.imageView?.setImageBitmap(bitmap)
-
-            handler!!.postDelayed({
-                countFile++
-
-                if (countFile >= file.size) {
-                    countFile = 0
+                binding?.apply {
+                    videoView.visibility = View.GONE
+                    imageView.visibility = View.VISIBLE
+                    btnStart.visibility = View.GONE
+                    btnPause.visibility = View.GONE
+                    btnResume.visibility = View.GONE
+                    btnStop.visibility = View.GONE
                 }
 
-                playMedia(file)
-            }, durationPic.toLong())
+                val bitmap = getBitmapFromAssets(mediaPath)
+                binding?.imageView?.setImageBitmap(bitmap)
 
-        } else if (mediaPath.endsWith(".mp4")) {
+                handler!!.postDelayed({
+                    countFile++
 
-            val durationVideo = file[countFile].duration * 1000
+                    if (countFile >= file.size) {
+                        countFile = 0
+                    }
 
-            binding?.apply {
-                videoView.visibility = View.VISIBLE
-                imageView.visibility = View.GONE
-                btnStart.visibility = View.VISIBLE
-                btnPause.visibility = View.VISIBLE
-                btnResume.visibility = View.VISIBLE
-                btnStop.visibility = View.VISIBLE
-            }
+                    playMedia(file)
+                }, durationPic.toLong())
 
-            //set play
-            player = ExoPlayer.Builder(this).build()
-            binding?.videoView?.player = player
+            } else if (mediaPath.endsWith(".mp4")) {
 
-            val assetUri = Uri.parse("asset://${file[countFile].file_path}")
-            val mediaItem = MediaItem.fromUri(assetUri)
-            player.setMediaItem(mediaItem)
-            player.prepare()
-            player.play()
+                val durationVideo = file[countFile].duration * 1000
 
-
-            handler!!.postDelayed({
-                player.stop()
-
-                countFile++
-                if (countFile >= file.size) {
-                    countFile = 0
+                binding?.apply {
+                    videoView.visibility = View.VISIBLE
+                    imageView.visibility = View.GONE
+                    btnStart.visibility = View.VISIBLE
+                    btnPause.visibility = View.VISIBLE
+                    btnResume.visibility = View.VISIBLE
+                    btnStop.visibility = View.VISIBLE
                 }
 
-                playMedia(file)
-                player.release()
-            }, durationVideo.toLong())
+                //set play
+                player = ExoPlayer.Builder(this).build()
+                binding?.videoView?.player = player
 
+                val assetUri = Uri.parse("asset://${file[countFile].file_path}")
+                val mediaItem = MediaItem.fromUri(assetUri)
+                player.setMediaItem(mediaItem)
+                player.prepare()
+                player.play()
+
+
+                handler!!.postDelayed({
+                    player.stop()
+
+                    countFile++
+                    if (countFile >= file.size) {
+                        countFile = 0
+                    }
+
+                    playMedia(file)
+                    player.release()
+                }, durationVideo.toLong())
+
+            }
+
+
+        } else {
+
+            countFile++
+
+            if (countFile >= file.size) {
+                countFile = 0
+            }
+
+            playMedia(file)
         }
+
 
     }
 
